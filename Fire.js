@@ -1,8 +1,8 @@
+import * as ImagePicker from 'expo-image-picker';
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-
 
 const firebaseConfig = {
     apiKey: "AIzaSyCZ7ispJE7ZhekjLLslUR5YWrF7D6pePKI",
@@ -24,38 +24,55 @@ class Fire {
     }
 
     addPost = async ({ text, localUri }) => {
-        const remoteUri = await this.uploadPhotoAsync(localUri);    
-        try {
-            const postsRef = collection(this.firestore, "posts");
-            const docRef = await addDoc(postsRef, {
-                text,
-                uid: this.uid,
-                timestamp: this.timestamp,
-                image: remoteUri
-            });
-    
-            return docRef;
-        } catch (error) {
-            throw error;
-        }
+        const remoteUri = await this.uploadPhotoAsync(localUri, `photos/${this.uid}/${Date.now()}`);
+
+        return new Promise((res, rej) => {
+            this.firestore
+                .collection("posts")
+                .add({
+                    text,
+                    uid: this.uid,
+                    timestamp: this.timestamp,
+                    image: remoteUri
+                })
+                .then(ref => {res(ref)})
+                .catch(error => {rej(error)});
+        });
     };
     
-    
-
-    uploadPhotoAsync = async uri => {
-        try {
-            const path = `photos/${this.uid}/${Date.now()}.jpg`;
+    uploadPhotoAsync = async (uri, filename) => {
+        return new Promise(async(res, rej) => {
             const response = await fetch(uri);
             const file = await response.blob();
-            const storageRef = ref(this.storage, path);
 
-            await uploadBytes(storageRef, file);
-            const url = await getDownloadURL(storageRef);
+            const storageRef = ref(this.storage, filename);
+            const uploadTask = uploadBytes(storageRef, file);
 
-            return url;
-        } catch (error) {
-            console.error("Error al subir la foto:", error);
-            throw error;
+            uploadTask.then((snapshot) => {
+                getDownloadURL(snapshot.ref).then((downloadURL) => {
+                    res(downloadURL);
+                }).catch(err => rej(err));
+            }).catch(err => rej(err));
+        });
+    }
+
+    // Método para seleccionar imagen usando ImagePicker
+    pickImage = async () => {
+        let result = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (result.granted === false) {
+            alert("Permission to access gallery is required!");
+            return;
+        }
+
+        let pickerResult = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+
+        if (!pickerResult.cancelled) {
+            return pickerResult.uri;  // Devuelve el URI de la imagen seleccionada
         }
     }
 
@@ -67,7 +84,6 @@ class Fire {
         return Date.now();
     }
 }
-
 
 Fire.shared = new Fire();
 export default Fire;

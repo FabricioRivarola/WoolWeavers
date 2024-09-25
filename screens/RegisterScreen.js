@@ -3,6 +3,9 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image, StatusBar, 
 import {Ionicons} from "@expo/vector-icons"
 import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import UserPermissions from "../utilities/UserPermissions";
+import * as ImagePicker from "expo-image-picker"
+import Fire from "../Fire"
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -22,13 +25,39 @@ export default class RegisterScreen extends React.Component {
     static navigationOptions = {
         headerShown: false
     };
-
+  
   state = {
-    name: "",
-    email: "",
-    password: "",
+    user: {
+      name: "",
+      email: "",
+      password: "",
+      avatar: null,
+    },
+    
     errorMessage: null
   };
+
+  handlePickAvatar = async () => {
+    // Solicita permisos para acceder a la galería
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (permissionResult.granted === false) {
+        alert("Se requieren permisos para acceder a la galería.");
+        return;
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+    });
+
+    if (!result.cancelled) {
+        this.setState({ user: { ...this.state.user, avatar: result.uri } });
+    }
+};
+
 
   handleSignUp = () => {
     createUserWithEmailAndPassword(auth, this.state.email, this.state.password)
@@ -45,17 +74,19 @@ export default class RegisterScreen extends React.Component {
     LayoutAnimation.easeInEaseOut();
     return (
       <View style={styles.container}>
-        <StatusBar barStyle="light-content" ></StatusBar>
-        <Image
-          source={require('../assets/fotos/logo.png')} 
-          style={styles.image}
-        />
+        <TouchableOpacity style={styles.avatarPlaceholder} onPress={this.handlePickAvatar}>
+          <Image source={{uri: this.state.user.avatar}} style={styles.avatar}/>
+          <Ionicons name="add" size={40} color={"#FFF"} style={{marginTop: 6, marginLeft: 2}}></Ionicons>
+        </TouchableOpacity>
 
+      
         <TouchableOpacity style={styles.back} onPress={() => this.props.navigation.goBack()}>
             <Ionicons name="arrow-back-outline" size={32} color={"#000"}></Ionicons>
         </TouchableOpacity>
 
         <Text style={styles.greeting}>{`Hola.\nBienvenido a nuestra comunidad.`}</Text>
+
+        
 
         <View style={styles.errorMessage}>
           <Text style={styles.error}>{this.state.errorMessage}</Text>
@@ -171,4 +202,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center"
   },
+  avatarPlaceholder: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "#56FFEB",
+    marginTop: 48, 
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 150
+  },
+  avatar: {
+    position: "absolute",
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },  
 });

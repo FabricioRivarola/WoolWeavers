@@ -30,7 +30,7 @@ export default class LoadingScreen extends React.Component {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color="#E9446A" />
-        <Text>Loading Screen</Text>
+        <Text>Loading...</Text>
       </View>
     );
   }
