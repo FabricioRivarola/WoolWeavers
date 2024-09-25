@@ -79,21 +79,23 @@ export default class PostScreen extends React.Component {
 
 
 handlePost = () => {
-    console.log("Image URI:", this.state.image);  // Verifica que la URI de la imagen esté definida
+  console.log("Image URI:", this.state.image);  // Verifica que la URI de la imagen esté definida
 
-    if (this.state.image) {
-        Fire.shared.addPost({ text: this.state.text.trim(), localUri: this.state.image })
-        .then(ref => {
-            this.setState({ text: "", image: null });
-            this.props.navigation.goBack();
-        })
-        .catch(error => {
-            console.error("Error al postear:", error);
-        });
-    } else {
-        alert("Selecciona una imagen antes de postear.");
-    }
+  if (this.state.image) {
+      Fire.shared.addPost({ text: this.state.text.trim(), localUri: this.state.image })
+      .then(() => {
+          this.setState({ text: "", image: null });
+          this.props.navigation.navigate('Home'); 
+      })
+      .catch(error => {
+          console.error("Error al postear:", error);
+      });
+  } else {
+      alert("Selecciona una imagen antes de postear.");
+  }
+  this.props.navigation.navigate('Home'); 
 };
+
 
   
 

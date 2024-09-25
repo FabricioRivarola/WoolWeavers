@@ -1,5 +1,5 @@
 // App.js
-import 'react-native-gesture-handler'; // Debe ser la primera importación
+import 'react-native-gesture-handler'; 
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -66,13 +66,14 @@ function TabNavigator() {
 
           return <Ionicons name={iconName} size={focused ? 24 : 20} color={color} />;
         },
+        showLabel: false,
         tabBarActiveTintColor: '#000',
         tabBarInactiveTintColor: '#B8BBC4',
-        showLabel: false,
+        
       })}
       >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Message" component={MessageScreen} />
+      <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }}/>
+      <Tab.Screen name="Message" component={MessageScreen} options={{ headerShown: false }}/>
       <Tab.Screen
         name="Post"
         component={PostScreen}
@@ -88,6 +89,7 @@ function TabNavigator() {
                 shadowRadius: 10,
                 shadowOpacity: 0.3,
               }}
+              options={{ headerShown: false }}
             />
           ),
         }}
@@ -98,8 +100,8 @@ function TabNavigator() {
           },
         })}
       />
-      <Tab.Screen name="Notificacion" component={NotificationScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Notificacion" component={NotificationScreen} options={{ headerShown: false }} />
+      <Tab.Screen name="Profile" component={ProfileScreen}  options={{ headerShown: false }}/>
     </Tab.Navigator>
   );
 }
@@ -108,9 +110,9 @@ function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Loading" screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Loading" component={LoadingScreen} />
-        <Stack.Screen name="Auth" component={AuthStackScreen} />
-        <Stack.Screen name="App" component={TabNavigator} />
+        <Stack.Screen name="Loading" component={LoadingScreen}  screenOptions={{ headerShown: false }}/>
+        <Stack.Screen name="Auth" component={AuthStackScreen} screenOptions={{ headerShown: false }}/>
+        <Stack.Screen name="App" component={TabNavigator} screenOptions={{ headerShown: false }}/>
         <Stack.Screen name="PostModal" component={PostScreen} options={{ presentation: 'modal', headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>

@@ -24,20 +24,23 @@ class Fire {
     }
 
     addPost = async ({ text, localUri }) => {
-        const remoteUri = await this.uploadPhotoAsync(localUri);
-
-        return new Promise((res, rej) => {
+        const remoteUri = await this.uploadPhotoAsync(localUri);    
+        try {
             const postsRef = collection(this.firestore, "posts");
-            addDoc(postsRef, {
+            const docRef = await addDoc(postsRef, {
                 text,
                 uid: this.uid,
                 timestamp: this.timestamp,
                 image: remoteUri
-            })
-            .then(ref => res(ref))
-            .catch(error => rej(error));
-        });
-    }
+            });
+    
+            return docRef;
+        } catch (error) {
+            throw error;
+        }
+    };
+    
+    
 
     uploadPhotoAsync = async uri => {
         try {

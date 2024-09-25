@@ -1,61 +1,94 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, LayoutAnimation } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { initializeApp } from "firebase/app";
-import { getAuth, signOut } from "firebase/auth";
+import { View, Text, StyleSheet, TouchableOpacity, LayoutAnimation, FlatList, Image, StatusBar } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import moment from "moment";
 
-// Configuración de Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyCZ7ispJE7ZhekjLLslUR5YWrF7D6pePKI",
-  authDomain: "woolweavers-abf68.firebaseapp.com",
-  projectId: "woolweavers-abf68",
-  storageBucket: "woolweavers-abf68.appspot.com",
-  messagingSenderId: "181615938800",
-  appId: "1:181615938800:web:f402ce81b78fe2cf390635"
-};
 
-// Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+post = [
+  {
+    id: "1",
+    name: "Carlos",
+    text: "Kit de tejido basico",
+    timestamp: 156919273726,
+    avatar: require("../assets/fotos/logo.png"),
+    image: require("../assets/fotos/5.jpg")
+  },
+  {
+    id: "2",
+    name: "Juana",
+    text: "Proceso de mi sweater :)",
+    timestamp: 156919273726,
+    avatar: require("../assets/fotos/logo.png"),
+    image: require("../assets/fotos/7.jpg")
+  },
+  {
+    id: "3",
+    name: "Marta",
+    text: "Funda de almohada tejida a crochet",
+    timestamp: 156919273726,
+    avatar: require("../assets/fotos/logo.png"),
+    image: require("../assets/fotos/8.jpg")
+  },
+  {
+    id: "4",
+    name: "Carmen",
+    text: "Apoya vasos de tortuga",
+    timestamp: 156919273726,
+    avatar: require("../assets/fotos/logo.png"),
+    image: require("../assets/fotos/3.jpg")
+  },
+]
+
 
 export default class HomeScreen extends React.Component {
-  state = {
-    email: "",
-    displayName: ""
-  };
+  static navigationOptions = {
+    headerShown: false
+  };  
+  
+  renderPost = post => {
+    return (
+      <View style={styles.feedItem}>
+        <Image source={post.avatar} style={styles.avatar}/>
+        <View style={{flex:1}}>
+          <View style={{flexDirection: "row", justifyContent: "space-between", alignItems: "center"}}>
+            <View>
+              <Text style={styles.name}>{post.name}</Text>
+              <Text style={styles.timestamp}>{moment(post.timestamp).fromNow()}</Text>
+            </View>
+          
+            <Ionicons name="ellipsis-horizontal" size={24} color="#73788B"></Ionicons>
+          </View>
 
-  componentDidMount() {
-    const user = auth.currentUser;
-    if (user) {
-      this.setState({
-        email: user.email,
-        displayName: user.displayName
-      });
-    }
-  }
+          <Text style={styles.post}>{post.text}</Text>
 
-  signOutUser = () => {
-    signOut(auth)
-      .then(() => {
-        console.log("User signed out!");
-        this.props.navigation.navigate("Auth");
-      })
-      .catch((error) => {
-        console.error("Error signing out: ", error);
-      });
+          <Image source={post.image} style={styles.postImage} resizeMode="cover"/>
+
+          <View style={{flexDirection: "row", marginTop: 10}}>
+            <Ionicons name="heart-outline" size={24} color="73788B" style={{marginRight: 16}}></Ionicons>
+            <Ionicons name="chatbox-ellipses-outline" size={24} color="73788B" style={{marginRight: 16}}></Ionicons>
+          </View>
+
+        </View>
+      </View>
+    );  
   };
 
   render() {
     LayoutAnimation.easeInEaseOut();
     return (
       <View style={styles.container}>
-        <Text>Hola, {this.state.displayName || this.state.email}</Text>
+        <StatusBar barStyle={"dark-content"}></StatusBar>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Feed</Text>
+        </View>
 
-        <TouchableOpacity style={{ marginTop: 32 }} onPress={this.signOutUser}>
-          <Text>Log Out</Text>
-        </TouchableOpacity>
+        <FlatList 
+          style={styles.feed} 
+          data={post} 
+          renderItem={({item}) => this.renderPost(item)}
+          keyExtractor={item => this.id}
+          showsVerticalScrollIndicator={false}
+        ></FlatList>
       </View>
     );
   }
@@ -65,7 +98,61 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#DEFFFB",
+  },
+  header: {
+    paddingTop: 16,
+    paddingBottom: 16,
+    backgroundColor: "#FFF",
+    alignItems: "center",
     justifyContent: "center",
-    alignItems: "center"
+    borderBottomWidth: 1,
+    borderBottomColor: "#EBECF4",
+    shadowColor: "#454D65",
+    shadowOffset: {height: 5},
+    shadowRadius: 15,
+    shadowOpacity: 0.2,
+    zIndex: 10
+  },
+  headerTitle:{
+    fontSize: 20,
+    fontWeight: "700"
+  },
+  feed:{
+    marginHorizontal: 16
+  },
+  feedItem:{
+    backgroundColor: "#FFF",
+    borderRadius: 5,
+    padding: 8,
+    flexDirection: "row",
+    marginVertical: 8
+  },
+  avatar: {
+    width: 36,
+    height: 36, 
+    borderRadius: 18,
+    marginRight: 16
+  },
+  name: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: "#454D65"
+  },
+  timestamp: {
+    fontSize: 11,
+    color: "#C4C6CE",
+    marginTop: 4
+  },
+  post: {
+    marginTop: 10,
+    fontSize: 14,
+    color: "#838899"
+  },
+  postImage: {
+    width: undefined,
+    height: 150,
+    borderRadius: 5,
+    MarginVertical: 16,
+    marginTop: 10
   }
 });

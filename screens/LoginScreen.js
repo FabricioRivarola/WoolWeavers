@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     alignSelf: "center",
-    marginTop: 20 
+    marginTop: 50 
   },
   errorMessage: {
     height: 72,

@@ -58,7 +58,7 @@ export default class RegisterScreen extends React.Component {
         <Text style={styles.greeting}>{`Hola.\nBienvenido a nuestra comunidad.`}</Text>
 
         <View style={styles.errorMessage}>
-          {this.state.errorMessage && <Text style={styles.error}>{this.state.errorMessage}</Text>}
+          <Text style={styles.error}>{this.state.errorMessage}</Text>
         </View>
 
         <View style={styles.form}>
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     alignSelf: "center",
-    marginTop: 20 
+    marginTop: 50 
   },
   error: {
     color: "#E9446A",
