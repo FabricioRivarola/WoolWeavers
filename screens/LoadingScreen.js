@@ -12,7 +12,7 @@ const firebaseConfig = {
   projectId: "woolweavers-abf68",
   storageBucket: "woolweavers-abf68.appspot.com",
   messagingSenderId: "181615938800",
-  appId: "1:181615938800:web:f402ce81b78fe2cf390635"
+  appId: "1:181615938800:web:f402ce81b78fe2cf390635",
 };
 
 // Inicializar Firebase
@@ -40,6 +40,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "center"
-  }
+    alignItems: "center",
+  },
 });

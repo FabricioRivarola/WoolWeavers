@@ -53,7 +53,7 @@ export default class RegisterScreen extends React.Component {
         quality: 1,
     });
 
-    if (!result.cancelled) {
+    if (!result.canceled) {
         this.setState({ user: { ...this.state.user, avatar: result.uri } });
     }
 };
