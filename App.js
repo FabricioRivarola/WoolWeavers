@@ -16,7 +16,7 @@ import RegisterScreen from "./screens/RegisterScreen";
 // import MessageScreen from "./screens/MessageScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import PostScreen from "./screens/PostScreen";
-// import NotificationScreen from "./screens/NotificationScreen";
+import SearchScreen from "./screens/NotificationScreen";
 
 // Firebase
 import { initializeApp, getApps } from "firebase/app";
@@ -43,49 +43,39 @@ const Tab = createBottomTabNavigator();
 function TabNavigator() {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
-
-          switch (route.name) {
-            case "Home":
-              iconName = "home";
-              break;
-            // case "Message":
-            //   iconName = "book";
-            //   break;
-            case "Post":
-              iconName = "camera-outline";
-              break;
-            // case "Notificacion":
-            //   iconName = "mail-unread-outline";
-            //   break;
-            case "Profile":
-              iconName = "accessibility-outline";
-              break;
-            default:
-              iconName = "circle";
-          }
-
-          return (
-            <Ionicons name={iconName} size={focused ? 24 : 20} color={color} />
-          );
-        },
-        showLabel: false,
+      screenOptions={{
+        tabBarShowLabel: false, // Asegúrate de que esta opción está aquí
         tabBarActiveTintColor: "#000",
         tabBarInactiveTintColor: "#B8BBC4",
-      })}
+        headerShown: false,
+      }}
     >
       <Tab.Screen
         name="Home"
         component={HomeScreen}
-        options={{ headerShown: false }}
+        options={{
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons
+              name="home-outline"
+              size={focused ? 24 : 20}
+              color={color}
+            />
+          ),
+        }}
       />
-      {/* <Tab.Screen
-        name="Message"
-        component={MessageScreen}
-        options={{ headerShown: false }}
-      /> */}
+      <Tab.Screen
+        name="Search"
+        component={SearchScreen}
+        options={{
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons
+              name="glasses-outline"
+              size={focused ? 28 : 24}
+              color={color}
+            />
+          ),
+        }}
+      />
       <Tab.Screen
         name="Post"
         component={PostScreen}
@@ -93,15 +83,14 @@ function TabNavigator() {
           tabBarIcon: ({ color }) => (
             <Ionicons
               name="camera-outline"
-              size={48}
-              color="#009381"
-              style={{
-                shadowColor: "#E9446A",
-                shadowOffset: { width: 0, height: 0 },
-                shadowRadius: 10,
-                shadowOpacity: 0.3,
-              }}
-              options={{ headerShown: false }}
+              size={24}
+              color={color}
+              // style={{
+              //   shadowColor: "#E9446A",
+              //   shadowOffset: { width: 0, height: 0 },
+              //   shadowRadius: 10,
+              //   shadowOpacity: 0.3,
+              // }}
             />
           ),
         }}
@@ -112,15 +101,18 @@ function TabNavigator() {
           },
         })}
       />
-      {/* <Tab.Screen
-        name="Notificacion"
-        component={NotificationScreen}
-        options={{ headerShown: false }}
-      /> */}
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{ headerShown: false }}
+        options={{
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons
+              name="accessibility-outline"
+              size={focused ? 24 : 20}
+              color={color}
+            />
+          ),
+        }}
       />
     </Tab.Navigator>
   );
