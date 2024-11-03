@@ -1,43 +1,54 @@
 import React from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
 import Fire from "../Fire";
-import { collection, doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { Button } from "react-native-paper";
+import { getAuth } from "firebase/auth";
 
 export default class ProfileScreen extends React.Component {
   state = {
-    user: {}, // Asegurarse de que el estado 'user' sea siempre un objeto
+    user: {},
+    postCount: 0,
   };
 
   unsubscribe = null;
 
   componentDidMount() {
-    const user = this.props.uid || Fire.shared.uid;
+    const auth = getAuth();
 
-    if (user) {
-      const userDoc = doc(Fire.shared.firestore, "users", user);
+    // Escuchar el estado de autenticación
+    this.unsubscribeAuth = auth.onAuthStateChanged((user) => {
+      if (user) {
+        const userDoc = doc(Fire.shared.firestore, "users", user.uid);
 
-      this.unsubscribe = onSnapshot(userDoc, (docSnapshot) => {
-        if (docSnapshot.exists()) {
-          // Verifica si el documento existe antes de acceder a sus datos
-          this.setState({ user: docSnapshot.data() });
-        } else {
-          console.error("No user data found!");
-        }
-      });
-    } else {
-      console.error("User ID is undefined!");
-    }
+        this.unsubscribe = onSnapshot(userDoc, (docSnapshot) => {
+          if (docSnapshot.exists()) {
+            const userData = docSnapshot.data();
+            this.setState({
+              user: userData,
+              postCount: userData.posts ? userData.posts.length : 0,
+            });
+          } else {
+            console.error("No user data found for user ID:", user.uid);
+          }
+        });
+      } else {
+        console.error("User is not logged in!");
+      }
+    });
   }
 
   componentWillUnmount() {
     if (this.unsubscribe) {
       this.unsubscribe();
     }
+    if (this.unsubscribeAuth) {
+      this.unsubscribeAuth();
+    }
   }
 
   render() {
-    const { user } = this.state;
+    const { user, postCount } = this.state;
 
     return (
       <View style={styles.container}>
@@ -56,15 +67,15 @@ export default class ProfileScreen extends React.Component {
         </View>
         <View style={styles.statsContainer}>
           <View style={styles.stat}>
-            <Text style={styles.statAmount}>21</Text>
+            <Text style={styles.statAmount}>{postCount}</Text>
             <Text style={styles.statTitle}>Posts</Text>
           </View>
           <View style={styles.stat}>
-            <Text style={styles.statAmount}>21</Text>
+            <Text style={styles.statAmount}>{user.followers || 0}</Text>
             <Text style={styles.statTitle}>Followers</Text>
           </View>
           <View style={styles.stat}>
-            <Text style={styles.statAmount}>210</Text>
+            <Text style={styles.statAmount}>{user.following || 0}</Text>
             <Text style={styles.statTitle}>Following</Text>
           </View>
         </View>
@@ -80,7 +91,7 @@ export default class ProfileScreen extends React.Component {
               });
           }}
         >
-          Logout
+          <Text>Logout</Text>
         </Button>
       </View>
     );

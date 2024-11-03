@@ -13,10 +13,10 @@ import LoadingScreen from "./screens/LoadingScreen";
 import LoginScreen from "./screens/LoginScreen";
 import HomeScreen from "./screens/HomeScreen";
 import RegisterScreen from "./screens/RegisterScreen";
-import MessageScreen from "./screens/MessageScreen";
+// import MessageScreen from "./screens/MessageScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import PostScreen from "./screens/PostScreen";
-import NotificationScreen from "./screens/NotificationScreen";
+// import NotificationScreen from "./screens/NotificationScreen";
 
 // Firebase
 import { initializeApp, getApps } from "firebase/app";
@@ -49,17 +49,17 @@ function TabNavigator() {
 
           switch (route.name) {
             case "Home":
-              iconName = "business";
+              iconName = "home";
               break;
-            case "Message":
-              iconName = "book";
-              break;
+            // case "Message":
+            //   iconName = "book";
+            //   break;
             case "Post":
               iconName = "camera-outline";
               break;
-            case "Notificacion":
-              iconName = "mail-unread-outline";
-              break;
+            // case "Notificacion":
+            //   iconName = "mail-unread-outline";
+            //   break;
             case "Profile":
               iconName = "accessibility-outline";
               break;
@@ -81,11 +81,11 @@ function TabNavigator() {
         component={HomeScreen}
         options={{ headerShown: false }}
       />
-      <Tab.Screen
+      {/* <Tab.Screen
         name="Message"
         component={MessageScreen}
         options={{ headerShown: false }}
-      />
+      /> */}
       <Tab.Screen
         name="Post"
         component={PostScreen}
@@ -112,11 +112,11 @@ function TabNavigator() {
           },
         })}
       />
-      <Tab.Screen
+      {/* <Tab.Screen
         name="Notificacion"
         component={NotificationScreen}
         options={{ headerShown: false }}
-      />
+      /> */}
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}

@@ -7,15 +7,15 @@ import Fire from "../Fire";
 
 // Configuración de Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyCZ7ispJE7ZhekjLLslUR5YWrF7D6pePKI",
-  authDomain: "woolweavers-abf68.firebaseapp.com",
-  projectId: "woolweavers-abf68",
-  storageBucket: "woolweavers-abf68.appspot.com",
-  messagingSenderId: "181615938800",
-  appId: "1:181615938800:web:f402ce81b78fe2cf390635",
+  apiKey: "AIzaSyDL3mxlu9Y5NJUUXcsIKde0Wp6Zm0lJYNc",
+  authDomain: "woolweavers-7b93a.firebaseapp.com",
+  projectId: "woolweavers-7b93a",
+  storageBucket: "woolweavers-7b93a.appspot.com",
+  messagingSenderId: "870014581991",
+  appId: "1:870014581991:web:b5079a35c6ba049db4b642",
 };
 
-// Inicializar Firebase
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 

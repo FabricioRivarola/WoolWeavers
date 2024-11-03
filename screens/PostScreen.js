@@ -20,46 +20,52 @@ import {
   getReactNativePersistence,
 } from "firebase/auth";
 import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
-import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { Formik } from "formik";
-import { ActivityIndicator, Button } from "react-native-paper";
+import { ActivityIndicator } from "react-native-paper";
 import { Picker } from "@react-native-picker/picker";
-import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+
+import {
+  getFirestore,
+  collection,
+  doc,
+  setDoc,
+  onSnapshot,
+  addDoc,
+} from "firebase/firestore";
+
+import { useUser } from "@clerk/clerk-react";
 
 // Configuración de Firebase
+// Configuración de Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyCZ7ispJE7ZhekjLLslUR5YWrF7D6pePKI",
-  authDomain: "woolweavers-abf68.firebaseapp.com",
-  projectId: "woolweavers-abf68",
-  storageBucket: "woolweavers-abf68.appspot.com",
-  messagingSenderId: "181615938800",
-  appId: "1:181615938800:web:f402ce81b78fe2cf390635",
+  apiKey: "AIzaSyDL3mxlu9Y5NJUUXcsIKde0Wp6Zm0lJYNc",
+  authDomain: "woolweavers-7b93a.firebaseapp.com",
+  projectId: "woolweavers-7b93a",
+  storageBucket: "woolweavers-7b93a.appspot.com",
+  messagingSenderId: "870014581991",
+  appId: "1:870014581991:web:b5079a35c6ba049db4b642",
 };
 
-// Inicializar Firebase
+// Inicializar Firebase y Firestore correctamente
 let app;
 if (getApps().length === 0) {
-  app = initializeApp(firebaseConfig); // Inicializa Firebase solo si no ha sido inicializado
+  app = initializeApp(firebaseConfig);
 } else {
-  app = getApps()[0]; // Usa la instancia ya inicializada
+  app = getApps()[0];
 }
+const db = getFirestore(app); // Usar getFirestore para obtener la instancia de Firestore
 
-// Inicializar Auth con persistencia en AsyncStorage
+// Inicializar Auth
 let auth;
 if (!getAuth(app)) {
   auth = initializeAuth(app, {
     persistence: getReactNativePersistence(ReactNativeAsyncStorage),
   });
 } else {
-  auth = getAuth(app); // Obtén la instancia si ya está inicializada
+  auth = getAuth(app);
 }
-
-const authInstance = getAuth();
-if (authInstance.currentUser) {
-  console.log("Usuario autenticado:", authInstance.currentUser);
-} else {
-  console.log("No hay usuario autenticado.");
-}
+const storage = getStorage(app);
 
 export const categories = [
   { label: "Categoria", value: "Categoria" },
@@ -72,46 +78,19 @@ export const categories = [
 
 export default function PostScreen({ navigation }) {
   const [image, setImage] = useState(null);
-  const [categoryList, setCategoryList] = useState([]);
-  const [text, setText] = useState("");
-  const storage = getStorage();
   const [loading, setLoading] = useState(false);
 
-  // Obtiene permisos para la galería
   useEffect(() => {
     getPhotoPermission();
-    getCategoryList();
   }, []);
 
-  // Obtener categorías desde Firestore
-  const getCategoryList = async () => {
-    try {
-      const db = getFirestore(app); // Obtén la instancia de Firestore
-      const querySnapshot = await getDocs(collection(db, "Descripcion"));
-
-      let categories = [];
-      querySnapshot.forEach((doc) => {
-        categories.push(doc.data()); // Agrega los datos de cada categoría a la lista
-      });
-
-      setCategoryList(categories); // Actualiza el estado con las categorías obtenidas
-    } catch (error) {
-      console.error("Error al obtener la lista de categorías:", error);
-    }
-  };
-
-  // Solicitar permiso para acceder a la galería de fotos
   const getPhotoPermission = async () => {
-    if (Constants.platform.android) {
-      const { status } =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== "granted") {
-        alert("Se necesita acceso a tu galería.");
-      }
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      alert("Se necesita acceso a tu galería.");
     }
   };
 
-  // Función para seleccionar imagen de la galería
   const pickImage = async () => {
     try {
       let result = await ImagePicker.launchImageLibraryAsync({
@@ -122,7 +101,7 @@ export default function PostScreen({ navigation }) {
       });
 
       if (!result.canceled) {
-        const imageUri = result.assets[0].uri; // Accede a la URI correctamente
+        const imageUri = result.assets[0].uri;
         setImage(imageUri);
       }
     } catch (error) {
@@ -130,52 +109,72 @@ export default function PostScreen({ navigation }) {
     }
   };
 
-  // Función para manejar el posteo
-  const handlePost = () => {
-    console.log("Image URI:", image); // Verifica que la URI de la imagen esté definida
-
-    if (image) {
-      Fire.shared
-        .addPost({ text: text.trim(), localUri: image })
-        .then(() => {
-          setText("");
-          setImage(null);
-          navigation.navigate("Home");
-        })
-        .catch((error) => {
-          console.error("Error al postear:", error);
-        });
-    } else {
-      alert("Selecciona una imagen antes de postear.");
+  const onSubmitMethod = async (values) => {
+    setLoading(true);
+    // Validar información antes de continuar
+    if (
+      !image ||
+      !values.name ||
+      !values.price ||
+      !values.category ||
+      !values.desc
+    ) {
+      ToastAndroid.show("Falta Información", ToastAndroid.SHORT);
+      setLoading(false);
+      return; // Salir de la función si falta información
     }
-  };
-
-  const onSubmitMethod = async (value) => {
-    setLoading(true); // Set loading to true
 
     try {
-      value.image = image; // Add image to the form data
-
-      // Convert URI to blob for upload
       const resp = await fetch(image);
       const blob = await resp.blob();
-      const storageRef = ref(storage, "fotos/" + Date.now() + ".jpg");
+      const imageName = Date.now() + ".jpg";
+      const storageRef = ref(storage, `fotos/${imageName}`);
 
-      // Upload the image
-      await uploadBytes(storageRef, blob);
-      console.log("Uploaded a blob file");
+      // Intenta subir la imagen y obtener la URL
+      const snapshot = await uploadBytes(storageRef, blob);
+      console.log("Imagen subida exitosamente:", snapshot);
 
       const downloadURL = await getDownloadURL(storageRef);
-      console.log(downloadURL); // Log the download URL
+      console.log("URL de descarga:", downloadURL);
 
-      // Continue with your post submission logic here
-      // e.g., Fire.shared.addPost({...})
-    } catch (error) {
-      console.error("Error during image upload:", error);
-    } finally {
-      setLoading(false); // Reset loading state
-      Alert.alert("Image Upload Success");
+      const user = auth.currentUser; // Asegúrate de que `auth` esté definido
+
+      if (user) {
+        values.image = downloadURL;
+        values.userName = user.displayName; // Cambia según tu estructura de usuario
+        values.userEmail = user.email; // Cambia según tu estructura de usuario
+        values.userImage = user.photoURL; // Cambia según tu estructura de usuario
+      } else {
+        throw new Error("No se encontró información del usuario.");
+      }
+      // Ahora intenta guardar el post en Firestore
+      const postRef = await addDoc(collection(db, "post"), values);
+      if (postRef.id) {
+        console.log("Documento añadido con ID:", postRef.id);
+      }
+      // const postData = {
+      //   id: postRef.id,
+      //   name: values.name,
+      //   desc: values.desc,
+      //   category: values.category,
+      //   address: values.address,
+      //   price: values.price,
+      //   image: downloadURL,
+      //   createdAt: new Date(),
+      //   userId: auth.currentUser.uid,
+      // };
+      // await setDoc(postRef, postData);
+      // console.log("Post creado correctamente");
+
+      // Aquí puedes continuar con la lógica de envío de publicaciones
+      // Por ejemplo: Fire.shared.addPost({...})
+
+      Alert.alert("Imagen subida con éxito");
       navigation.navigate("Home");
+    } catch (error) {
+      console.error("Error durante la subida de imagen:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -186,7 +185,7 @@ export default function PostScreen({ navigation }) {
           <Ionicons name="arrow-back-outline" size={32} color={"#000"} />
         </TouchableOpacity>
       </View>
-      <Text style={styles.title}>Añadir Publicacion</Text>
+      <Text style={styles.title}>Añadir Publicación</Text>
       <Text style={styles.subt}>Publica y Comienza a Vender :)</Text>
       <Formik
         initialValues={{
@@ -196,39 +195,17 @@ export default function PostScreen({ navigation }) {
           address: "",
           price: "",
           image: "",
+          userName: "",
+          userEmail: "",
+          userImage: "",
         }}
-        onSubmit={(value) => onSubmitMethod(value)}
-        //Validaciones para que no se publique nada vacio
-        validate={(values) => {
-          const error = {};
-          if (!values.name) {
-            console.log("No hay titulo");
-            ToastAndroid.show("No hay titulo", ToastAndroid.SHORT);
-            error.name = "Debe tener titulo";
-          }
-          if (!values.image) {
-            console.log("No hay imagen");
-            ToastAndroid.show("No hay imagen", ToastAndroid.SHORT);
-            error.image = "Debe tener imagen";
-          }
-          if (!values.address) {
-            console.log("No hay direccion");
-            ToastAndroid.show("No hay direccion", ToastAndroid.SHORT);
-            error.address = "Debe tener direccion";
-          }
-          if (!values.price) {
-            console.log("No hay precio");
-            ToastAndroid.show("No hay precio", ToastAndroid.SHORT);
-            error.price = "Debe tener precio";
-          }
-          console.log(error);
-        }}
+        onSubmit={(values) => onSubmitMethod(values)}
       >
         {({ handleChange, handleBlur, handleSubmit, values }) => (
           <View>
             <TextInput
-              placeholder="Titulo"
-              value={values?.name}
+              placeholder="Título"
+              value={values.name}
               style={styles.input}
               onChangeText={handleChange("name")}
             />
@@ -245,27 +222,33 @@ export default function PostScreen({ navigation }) {
                 <Image
                   source={require("../assets/fotos/logo.png")}
                   style={{ width: 100, height: 100, borderRadius: 15 }}
-                ></Image>
+                />
               )}
             </TouchableOpacity>
 
             <TextInput
-              placeholder="Descripcion"
-              value={values?.desc}
+              placeholder="Descripción"
+              value={values.desc}
               style={styles.input}
               numberOfLines={5}
               onChangeText={handleChange("desc")}
             />
             <TextInput
               placeholder="Precio"
-              value={values?.price}
+              value={values.price}
               style={styles.input}
               onChangeText={handleChange("price")}
               keyboardType="number-pad"
             />
+            <TextInput
+              placeholder="Direccion"
+              value={values.address}
+              style={styles.input}
+              onChangeText={handleChange("address")}
+            />
             <View style={{ borderWidth: 1, borderRadius: 15 }}>
               <Picker
-                selectedValue={values?.category}
+                selectedValue={values.category}
                 onValueChange={handleChange("category")}
               >
                 {categories.map((item, index) => (
@@ -278,30 +261,15 @@ export default function PostScreen({ navigation }) {
               </Picker>
             </View>
 
-            <TextInput
-              placeholder="Direccion"
-              value={values?.address}
-              style={styles.input}
-              onChangeText={handleChange("address")}
-            />
-
             <TouchableOpacity
+              style={styles.button}
               onPress={handleSubmit}
-              style={{
-                backgroundColor: loading ? "#ccc" : "#007BFF",
-                borderRadius: 20,
-                padding: 12,
-                backgroundColor: "#1877F2",
-                marginTop: 20,
-                marginBottom: 10,
-                color: "#EEEEEE",
-              }}
               disabled={loading}
             >
               {loading ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator size="small" color="#ffffff" />
               ) : (
-                <Text style={styles.btnText}>Publicar</Text>
+                <Text style={styles.buttonText}>Publicar</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -310,75 +278,46 @@ export default function PostScreen({ navigation }) {
     </SafeAreaView>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#DEFFFB",
+    padding: 20,
+    backgroundColor: "#fff",
   },
   header: {
-    // paddingTop: 40,
+    marginTop: Constants.statusBarHeight,
     flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 32,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#D8D9D8",
-    color: "#000",
-  },
-  inputContainer: {
-    margin: 32,
-    flexDirection: "row",
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 10,
-  },
-  photo: {
-    alignItems: "flex-end",
-    marginHorizontal: 32,
-  },
-  input: {
-    marginTop: 10,
-    marginBottom: 5,
-    borderWidth: 1,
-    borderRadius: 14,
-    padding: 10,
-    paddingHorizontal: 17,
-    fontSize: 17,
-    textAlignVertical: "top",
+    alignItems: "center",
   },
   title: {
-    textAlign: "center",
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 10,
-    marginTop: 20,
-    color: "#000",
-    // backgroundColor: "#DEFFE",
   },
   subt: {
-    textAlign: "center",
-    fontSize: 16,
-    marginBottom: 20,
-    // marginTop: 10,
-    color: "#999",
-    // backgroundColor: "#DEFFFB",
-  },
-  btn: {
-    borderRadius: 20,
-    padding: 12,
-    backgroundColor: "#1877F2",
-    marginTop: 20,
-    marginBottom: 10,
-    color: "#EEEEEE",
-  },
-  btnText: {
-    alignContent: "center",
     fontSize: 18,
+    marginBottom: 20,
+    color: "grey",
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#cccccc",
+    borderRadius: 15,
+    padding: 10,
+    marginBottom: 10,
+  },
+  button: {
+    backgroundColor: "#3b5998",
+    padding: 15,
+    borderRadius: 15,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  buttonText: {
+    color: "#ffffff",
     fontWeight: "bold",
-    color: "#FFFFFF",
-    textAlign: "center",
   },
 });
+
+//minuto 1:38:30

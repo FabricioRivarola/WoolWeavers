@@ -1,18 +1,16 @@
 import * as ImagePicker from "expo-image-picker";
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { useEffect } from "react";
-import { formik } from "formik";
+import { getFirestore } from "firebase/firestore"; // Asegúrate de importar Firestore
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCZ7ispJE7ZhekjLLslUR5YWrF7D6pePKI",
-  authDomain: "woolweavers-abf68.firebaseapp.com",
-  projectId: "woolweavers-abf68",
-  storageBucket: "woolweavers-abf68.appspot.com",
-  messagingSenderId: "181615938800",
-  appId: "1:181615938800:web:f402ce81b78fe2cf390635",
+  apiKey: "AIzaSyDL3mxlu9Y5NJUUXcsIKde0Wp6Zm0lJYNc",
+  authDomain: "woolweavers-7b93a.firebaseapp.com",
+  projectId: "woolweavers-7b93a",
+  storageBucket: "woolweavers-7b93a.appspot.com",
+  messagingSenderId: "870014581991",
+  appId: "1:870014581991:web:b5079a35c6ba049db4b642",
 };
 
 // Inicializar Firebase
@@ -21,29 +19,9 @@ const app = initializeApp(firebaseConfig);
 class Fire {
   constructor() {
     this.auth = getAuth(app);
-    this.firestore = getFirestore(app);
+    this.firestore = getFirestore(app); // Agrega Firestore al constructor
     this.storage = getStorage(app);
   }
-
-  uploadPhotoAsync = async (uri, filename) => {
-    return new Promise(async (res, rej) => {
-      const response = await fetch(uri);
-      const file = await response.blob();
-
-      const storageRef = ref(this.storage, filename);
-      const uploadTask = uploadBytes(storageRef, file);
-
-      uploadTask
-        .then((snapshot) => {
-          getDownloadURL(snapshot.ref)
-            .then((downloadURL) => {
-              res(downloadURL);
-            })
-            .catch((err) => rej(err));
-        })
-        .catch((err) => rej(err));
-    });
-  };
 
   // Método para seleccionar imagen usando ImagePicker
   pickImage = async () => {
@@ -61,7 +39,7 @@ class Fire {
     });
 
     if (!pickerResult.canceled) {
-      return pickerResult.uri; // Devuelve el URI de la imagen seleccionada
+      return pickerResult.assets[0].uri; // Devuelve el URI de la imagen seleccionada
     }
   };
 
@@ -78,5 +56,7 @@ class Fire {
   };
 }
 
+// Usa la instancia de Fire para exportar la referencia de Firestore
 Fire.shared = new Fire();
+export { Fire }; // Exporta Fire para acceder a su instancia
 export default Fire;
