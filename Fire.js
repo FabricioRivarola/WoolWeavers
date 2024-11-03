@@ -1,7 +1,7 @@
 import * as ImagePicker from "expo-image-picker";
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore"; // Asegúrate de importar Firestore
+import { getFirestore } from "firebase/firestore"; // Importa Firestore
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
@@ -16,17 +16,20 @@ const firebaseConfig = {
 // Inicializar Firebase
 const app = initializeApp(firebaseConfig);
 
+// Inicializar Firestore
+const db = getFirestore(app);
+
 class Fire {
   constructor() {
     this.auth = getAuth(app);
-    this.firestore = getFirestore(app); // Agrega Firestore al constructor
+    this.firestore = db; // Usar la instancia de Firestore
     this.storage = getStorage(app);
   }
 
   // Método para seleccionar imagen usando ImagePicker
   pickImage = async () => {
     let result = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (result.granted === false) {
+    if (!result.granted) {
       alert("Permission to access gallery is required!");
       return;
     }
@@ -56,7 +59,7 @@ class Fire {
   };
 }
 
-// Usa la instancia de Fire para exportar la referencia de Firestore
-Fire.shared = new Fire();
-export { Fire }; // Exporta Fire para acceder a su instancia
-export default Fire;
+// Exportar la instancia de Fire y la base de datos
+const FireInstance = new Fire();
+export { FireInstance, db }; // Exportar FireInstance y db
+export default FireInstance; // Exportar la instancia como default

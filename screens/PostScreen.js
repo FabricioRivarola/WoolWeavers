@@ -9,6 +9,8 @@ import {
   TextInput,
   ToastAndroid,
   Alert,
+  KeyboardAvoidingView,
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
@@ -24,19 +26,13 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { Formik } from "formik";
 import { ActivityIndicator } from "react-native-paper";
 import { Picker } from "@react-native-picker/picker";
-
 import {
   getFirestore,
   collection,
-  doc,
-  setDoc,
   onSnapshot,
   addDoc,
 } from "firebase/firestore";
 
-import { useUser } from "@clerk/clerk-react";
-
-// Configuración de Firebase
 // Configuración de Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDL3mxlu9Y5NJUUXcsIKde0Wp6Zm0lJYNc",
@@ -68,7 +64,7 @@ if (!getAuth(app)) {
 const storage = getStorage(app);
 
 export const categories = [
-  { label: "Categoria", value: "Categoria" },
+  { label: "Todo", value: "Todo" },
   { label: "Lanas", value: "lanas" },
   { label: "Conjuntos", value: "conjuntos" },
   { label: "Prendas", value: "prendas" },
@@ -147,30 +143,15 @@ export default function PostScreen({ navigation }) {
       } else {
         throw new Error("No se encontró información del usuario.");
       }
+
       // Ahora intenta guardar el post en Firestore
       const postRef = await addDoc(collection(db, "post"), values);
       if (postRef.id) {
         console.log("Documento añadido con ID:", postRef.id);
       }
-      // const postData = {
-      //   id: postRef.id,
-      //   name: values.name,
-      //   desc: values.desc,
-      //   category: values.category,
-      //   address: values.address,
-      //   price: values.price,
-      //   image: downloadURL,
-      //   createdAt: new Date(),
-      //   userId: auth.currentUser.uid,
-      // };
-      // await setDoc(postRef, postData);
-      // console.log("Post creado correctamente");
-
-      // Aquí puedes continuar con la lógica de envío de publicaciones
-      // Por ejemplo: Fire.shared.addPost({...})
 
       Alert.alert("Imagen subida con éxito");
-      navigation.navigate("Home");
+      navigation.navigate("Home"); // Navegar a la pantalla Home
     } catch (error) {
       console.error("Error durante la subida de imagen:", error);
     } finally {
@@ -179,7 +160,7 @@ export default function PostScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <KeyboardAvoidingView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back-outline" size={32} color={"#000"} />
@@ -198,11 +179,12 @@ export default function PostScreen({ navigation }) {
           userName: "",
           userEmail: "",
           userImage: "",
+          createdAt: Date.now(),
         }}
         onSubmit={(values) => onSubmitMethod(values)}
       >
         {({ handleChange, handleBlur, handleSubmit, values }) => (
-          <View>
+          <ScrollView>
             <TextInput
               placeholder="Título"
               value={values.name}
@@ -272,10 +254,10 @@ export default function PostScreen({ navigation }) {
                 <Text style={styles.buttonText}>Publicar</Text>
               )}
             </TouchableOpacity>
-          </View>
+          </ScrollView>
         )}
       </Formik>
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -319,5 +301,3 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
-
-//minuto 1:38:30
