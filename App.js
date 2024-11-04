@@ -16,7 +16,7 @@ import RegisterScreen from "./screens/RegisterScreen";
 // import MessageScreen from "./screens/MessageScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import PostScreen from "./screens/PostScreen";
-import SearchScreen from "./screens/NotificationScreen";
+import SearchScreen from "./screens/SearchScreen";
 
 // Firebase
 import { initializeApp, getApps } from "firebase/app";
