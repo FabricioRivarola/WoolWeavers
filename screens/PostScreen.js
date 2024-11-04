@@ -72,7 +72,7 @@ export const categories = [
   { label: "Patrones", value: "patrones" },
 ];
 
-export default function PostScreen({ navigation }) {
+export default function PostScreen({ navigation, onPostPublished }) {
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -140,6 +140,7 @@ export default function PostScreen({ navigation }) {
         values.userName = user.displayName; // Cambia según tu estructura de usuario
         values.userEmail = user.email; // Cambia según tu estructura de usuario
         values.userImage = user.photoURL; // Cambia según tu estructura de usuario
+        values.userId = user.uid;
       } else {
         throw new Error("No se encontró información del usuario.");
       }
@@ -148,6 +149,7 @@ export default function PostScreen({ navigation }) {
       const postRef = await addDoc(collection(db, "post"), values);
       if (postRef.id) {
         console.log("Documento añadido con ID:", postRef.id);
+        if (onPostPublished) onPostPublished(); // Llama al callback
       }
 
       Alert.alert("Imagen subida con éxito");
@@ -223,7 +225,7 @@ export default function PostScreen({ navigation }) {
               keyboardType="number-pad"
             />
             <TextInput
-              placeholder="Direccion"
+              placeholder="Dirección"
               value={values.address}
               style={styles.input}
               onChangeText={handleChange("address")}
@@ -265,7 +267,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#fff",
+    backgroundColor: "#DEFFFB",
   },
   header: {
     marginTop: Constants.statusBarHeight,
@@ -288,16 +290,18 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     padding: 10,
     marginBottom: 10,
+    marginTop: 10,
   },
   button: {
     backgroundColor: "#3b5998",
     padding: 15,
     borderRadius: 15,
     alignItems: "center",
-    marginTop: 20,
+    margin: 10,
   },
   buttonText: {
     color: "#ffffff",
+    fontSize: 16,
     fontWeight: "bold",
   },
 });

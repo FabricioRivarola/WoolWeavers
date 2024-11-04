@@ -8,6 +8,7 @@ import {
   Image,
   StatusBar,
   LayoutAnimation,
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { initializeApp } from "firebase/app";
@@ -16,6 +17,7 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
 } from "firebase/auth";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Importa Firebase Storage
 import * as ImagePicker from "expo-image-picker";
 
 // Configuración de Firebase
@@ -28,9 +30,10 @@ const firebaseConfig = {
   appId: "1:870014581991:web:b5079a35c6ba049db4b642",
 };
 
-// Initialize Firebase
+// Inicializar Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const storage = getStorage(app); // Inicializa Firebase Storage
 
 export default class RegisterScreen extends React.Component {
   static navigationOptions = {
@@ -48,7 +51,6 @@ export default class RegisterScreen extends React.Component {
   };
 
   handlePickAvatar = async () => {
-    // Solicita permisos para acceder a la galería
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
 
@@ -64,27 +66,84 @@ export default class RegisterScreen extends React.Component {
       quality: 1,
     });
 
-    if (!result.canceled) {
-      this.setState({ user: { ...this.state.user, avatar: result.uri } });
+    console.log("Resultado de la selección de imagen:", result); // Log para verificar la selección de la imagen
+
+    // Asegúrate de que se esté accediendo a la propiedad correcta
+    if (!result.canceled && result.assets.length > 0) {
+      const uri = result.assets[0].uri; // URI de la imagen seleccionada
+      this.setState({ user: { ...this.state.user, avatar: uri } });
+
+      // Obtener una referencia al almacenamiento
+      const storage = getStorage(app);
+      const storageRef = ref(storage, `avatars/${user.uid}.jpg`); // Cambia `user.uid` a tu identificador de usuario
+
+      // Cargar la imagen
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      uploadBytes(storageRef, blob)
+        .then((snapshot) => {
+          console.log("Imagen subida:", snapshot);
+        })
+        .catch((error) => {
+          console.log("Error durante la carga:", error);
+        });
     }
   };
 
-  handleSignUp = () => {
-    const { name, email, password } = this.state.user; // Desestructura el usuario
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredentials) => {
-        const user = userCredentials.user;
-        return updateProfile(user, {
+  handleSignUp = async () => {
+    const { name, email, password, avatar } = this.state.user; // Desestructura el usuario
+    console.log("Datos del usuario:", this.state.user); // Log para verificar los datos del usuario
+
+    try {
+      const userCredentials = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredentials.user;
+
+      console.log("Usuario creado:", user); // Log para verificar el usuario creado
+
+      // Si hay un avatar, súbelo a Firebase Storage
+      if (avatar) {
+        const response = await fetch(avatar);
+        const blob = await response.blob();
+        const avatarRef = ref(storage, `avatars/${user.uid}`); // Crea una referencia única en Storage
+
+        console.log("Referencia del avatar:", avatarRef); // Log para verificar la referencia
+
+        // Sube el archivo
+        await uploadBytes(avatarRef, blob);
+        console.log("Imagen subida con éxito."); // Log para verificar que la imagen se subió
+
+        // Obtiene la URL de descarga
+        const avatarURL = await getDownloadURL(avatarRef);
+        console.log("URL del avatar:", avatarURL); // Log para verificar la URL
+
+        // Actualiza el perfil del usuario con la URL del avatar
+        await updateProfile(user, {
+          displayName: name,
+          photoURL: avatarURL, // Guarda la URL del avatar
+        });
+        console.log("Perfil del usuario actualizado."); // Log para verificar que el perfil se actualizó
+      } else {
+        await updateProfile(user, {
           displayName: name,
         });
-      })
-      .catch((error) => this.setState({ errorMessage: error.message }));
+        console.log("Perfil del usuario actualizado sin avatar."); // Log para verificar que se actualizó sin avatar
+      }
+
+      // Aquí puedes agregar el código para guardar la información del usuario en Firestore si es necesario
+    } catch (error) {
+      console.log("Error durante el registro:", error.message); // Log para verificar el error
+      this.setState({ errorMessage: error.message });
+    }
   };
 
   render() {
     LayoutAnimation.easeInEaseOut();
     return (
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
         <TouchableOpacity
           style={styles.avatarPlaceholder}
           onPress={this.handlePickAvatar}
@@ -176,7 +235,7 @@ export default class RegisterScreen extends React.Component {
             <Text style={{ fontWeight: "500", color: "#009381" }}>Log In</Text>
           </Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     );
   }
 }
@@ -240,17 +299,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   avatarPlaceholder: {
+    marginTop: 50,
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: "#56FFEB",
-    marginTop: 48,
+    backgroundColor: "#009381",
     justifyContent: "center",
     alignItems: "center",
-    marginLeft: 150,
+    alignSelf: "center",
   },
   avatar: {
-    position: "absolute",
     width: 100,
     height: 100,
     borderRadius: 50,

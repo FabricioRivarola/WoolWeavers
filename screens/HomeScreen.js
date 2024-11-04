@@ -162,10 +162,13 @@ export default class HomeScreen extends React.Component {
             }
           />
           <Text style={styles.description}>
-            ${post.price || "Precio no disponible"}
+            Precio: ${post.price || "Precio no disponible"}
           </Text>
           <Text style={styles.description}>
             {post.desc || "Descripción no disponible"}
+          </Text>
+          <Text style={styles.description}>
+            Categoria: {post.category || "Categoría no disponible"}
           </Text>
           <View style={styles.postActions}>
             <Button

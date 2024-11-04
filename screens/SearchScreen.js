@@ -36,10 +36,18 @@ export default class SearchScreen extends React.Component {
           id: doc.id,
           ...doc.data(),
         };
+        console.log("Post desde Firestore: ", post); // Verifica que el post tenga todas las propiedades necesarias
         firestorePosts.push(post);
       });
 
-      this.setState({ posts: firestorePosts });
+      // Combina las publicaciones de Firestore y las estáticas
+      const allPosts = [...firestorePosts];
+
+      // Ordena las publicaciones por timestamp en orden descendente
+      const sortedPosts = allPosts.sort((a, b) => b.createdAt - a.createdAt);
+
+      // Establece el estado con las publicaciones ordenadas
+      this.setState({ posts: sortedPosts });
     } catch (error) {
       console.error("Error fetching posts: ", error);
     }

@@ -1,16 +1,26 @@
-import Constants from "expo-constants";
-import * as Permissions from "expo-permissions";
+import React, { createContext, useState, useEffect } from "react";
+import auth from "@react-native-firebase/auth";
 
-class UserPermissions {
-  getCameraPermission = async () => {
-    if (Constants.platform.android) {
-      const { status } = await Permissions.askAsync(Permissions.CAMERA);
+export const AuthContext = createContext();
 
-      if (status != "granted") {
-        alert("Se requiere permisos para acceder a tus fotos");
-      }
-    }
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const subscriber = auth().onAuthStateChanged((user) => {
+      setUser(user);
+    });
+
+    return subscriber; // unsubscribe on unmount
+  }, []);
+
+  const logout = async () => {
+    await auth().signOut();
   };
-}
 
-export default new UserPermissions();
+  return (
+    <AuthContext.Provider value={{ user, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
