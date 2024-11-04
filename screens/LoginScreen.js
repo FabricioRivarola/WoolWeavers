@@ -8,6 +8,7 @@ import {
   Image,
   StatusBar,
   LayoutAnimation,
+  ScrollView,
 } from "react-native";
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
@@ -62,7 +63,7 @@ export default class LoginScreen extends React.Component {
           )}
         </View>
 
-        <View style={styles.form}>
+        <ScrollView style={styles.form}>
           <View>
             <Text style={styles.inputTitle}>Email Address</Text>
             <TextInput
@@ -83,7 +84,7 @@ export default class LoginScreen extends React.Component {
               value={this.state.password}
             />
           </View>
-        </View>
+        </ScrollView>
 
         <TouchableOpacity style={styles.button} onPress={this.handleLogin}>
           <Text style={{ color: "#000", fontWeight: "500" }}>Sign In</Text>
