@@ -79,6 +79,7 @@ export default class HomeScreen extends React.Component {
   state = {
     posts: [],
     selectedCategory: categories[0].value,
+    refreshing: false, // Agregar el estado de refreshing
   };
 
   getLatestItemList = async () => {
@@ -101,9 +102,10 @@ export default class HomeScreen extends React.Component {
       const sortedPosts = allPosts.sort((a, b) => b.createdAt - a.createdAt);
 
       // Establece el estado con las publicaciones ordenadas
-      this.setState({ posts: sortedPosts });
+      this.setState({ posts: sortedPosts, refreshing: false });
     } catch (error) {
       console.error("Error fetching posts: ", error);
+      this.setState({ refreshing: false });
     }
   };
 
@@ -131,13 +133,20 @@ export default class HomeScreen extends React.Component {
     );
   };
 
+  onRefresh = () => {
+    this.setState({ refreshing: true }, () => {
+      this.getLatestItemList(); // Llama a la función para obtener los posts nuevamente
+    });
+  };
+
   renderPost = (post) => {
     return (
       <View style={styles.feedItem}>
         <Image
-          source={post.userImage ? post.avatar : defaultAvatar}
+          source={post.userImage ? { uri: post.userImage } : defaultAvatar}
           style={styles.avatar}
         />
+
         <View style={{ flex: 1 }}>
           <View style={styles.postHeader}>
             <View>
@@ -161,7 +170,6 @@ export default class HomeScreen extends React.Component {
               console.error("Error cargando la imagen:", post.image)
             }
           />
-          {/* <View style={styles.caja}> */}
           <Text style={styles.description}>
             {post.desc || "Descripción no disponible"}
           </Text>
@@ -172,7 +180,6 @@ export default class HomeScreen extends React.Component {
           <Text style={styles.description}>
             Categoria: {post.category || "Categoría no disponible"}
           </Text>
-          {/* </View> */}
           <View style={styles.postActions}>
             <Button
               title="Comprar"
@@ -218,6 +225,8 @@ export default class HomeScreen extends React.Component {
           renderItem={({ item }) => this.renderPost(item)}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
+          refreshing={this.state.refreshing} // Indica que la lista está siendo refrescada
+          onRefresh={this.onRefresh} // Llama a la función de refresco cuando el usuario desliza
         />
       </View>
     );
@@ -236,7 +245,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#454D65",
-    // color: "black",
     shadowOffset: { height: 5 },
     shadowRadius: 15,
     shadowOpacity: 0.2,
@@ -260,70 +268,57 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   feedItem: {
-    backgroundColor: "#EFE2FA", // Color de fondo de los ítems
-    borderRadius: 5,
-    padding: 8,
+    backgroundColor: "#EFE2FA", // Fondo de cada item
     flexDirection: "row",
-    marginVertical: 8,
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    marginRight: 16,
-  },
-  name: {
-    fontSize: 15,
-    fontWeight: "500",
-    color: "#454D65",
-  },
-  timestamp: {
-    fontSize: 12,
-    color: "#333", // Cambiado a un gris oscuro para mayor contraste
-    marginTop: 4,
-  },
-  post: {
-    marginTop: 10,
-    fontSize: 16,
-    color: "#7164B4",
-  },
-  description: {
-    fontSize: 14,
-    color: "#000", // Color del texto de la descripción 7164B4
-    marginTop: 4,
-  },
-  descriptionn: {
-    fontSize: 14,
-    color: "#7164B4", // Color del texto de la descripción 7164B4
-    marginTop: 4,
-  },
-  postImage: {
-    width: "100%",
-    height: 150,
-    borderRadius: 5,
-    marginVertical: 16,
-    marginTop: 10,
-  },
-  postHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  postActions: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    margin: 10,
-  },
-  caja: {
-    marginTop: 10,
-    marginBottom: 10,
-    backgroundColor: "#8F9FE4", // Color de fondo de la caja
-    borderRadius: 5,
-    padding: 16,
+    padding: 10,
+    marginBottom: 16,
+    borderRadius: 8,
     shadowColor: "#454D65",
     shadowOffset: { height: 5 },
     shadowRadius: 15,
     shadowOpacity: 0.2,
-    zIndex: 10,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 16,
+  },
+  postHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  name: {
+    fontWeight: "700",
+    fontSize: 16,
+    color: "#000",
+  },
+  timestamp: {
+    fontSize: 14,
+    color: "#555",
+  },
+  post: {
+    fontWeight: "500",
+    fontSize: 18,
+    color: "#000",
+  },
+  postImage: {
+    marginVertical: 16,
+    height: 200,
+    borderRadius: 8,
+  },
+  description: {
+    color: "#777",
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  descriptionn: {
+    color: "#777",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  postActions: {
+    marginTop: 16,
   },
 });

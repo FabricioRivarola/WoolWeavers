@@ -74,7 +74,7 @@ export default class SearchScreen extends React.Component {
     return (
       <View style={styles.feedItem}>
         <Image
-          source={post.avatar ? { uri: post.avatar } : defaultAvatar}
+          source={post.userImage ? { uri: post.userImage } : defaultAvatar}
           style={styles.avatar}
         />
         <View style={{ flex: 1 }}>
