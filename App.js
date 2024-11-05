@@ -17,6 +17,7 @@ import RegisterScreen from "./screens/RegisterScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import PostScreen from "./screens/PostScreen";
 import SearchScreen from "./screens/SearchScreen";
+import EditPostScreen from "./screens/EditPostScreen"; // Nueva pantalla importada
 
 // Firebase
 import { initializeApp, getApps } from "firebase/app";
@@ -48,6 +49,10 @@ function TabNavigator() {
         tabBarActiveTintColor: "#000",
         tabBarInactiveTintColor: "#B8BBC4",
         headerShown: false,
+        tabBarStyle: {
+          backgroundColor: "#EFE2FA", // Color de fondo de la barra de navegación
+          borderTopWidth: 0, // Eliminar borde superior
+        },
       }}
     >
       <Tab.Screen
@@ -81,17 +86,7 @@ function TabNavigator() {
         component={PostScreen}
         options={{
           tabBarIcon: ({ color }) => (
-            <Ionicons
-              name="camera-outline"
-              size={24}
-              color={color}
-              // style={{
-              //   shadowColor: "#E9446A",
-              //   shadowOffset: { width: 0, height: 0 },
-              //   shadowRadius: 10,
-              //   shadowOpacity: 0.3,
-              // }}
-            />
+            <Ionicons name="camera-outline" size={24} color={color} />
           ),
         }}
         listeners={({ navigation }) => ({
@@ -125,25 +120,18 @@ function App() {
         initialRouteName="Loading"
         screenOptions={{ headerShown: false }}
       >
-        <Stack.Screen
-          name="Loading"
-          component={LoadingScreen}
-          screenOptions={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Auth"
-          component={AuthStackScreen}
-          screenOptions={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="App"
-          component={TabNavigator}
-          screenOptions={{ headerShown: false }}
-        />
+        <Stack.Screen name="Loading" component={LoadingScreen} />
+        <Stack.Screen name="Auth" component={AuthStackScreen} />
+        <Stack.Screen name="App" component={TabNavigator} />
         <Stack.Screen
           name="PostModal"
           component={PostScreen}
-          options={{ presentation: "modal", headerShown: false }}
+          options={{ presentation: "modal" }}
+        />
+        <Stack.Screen
+          name="EditPostScreen"
+          component={EditPostScreen}
+          options={{ title: "Editar Publicación", headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>

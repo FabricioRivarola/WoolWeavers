@@ -198,14 +198,11 @@ export default function PostScreen({ navigation, onPostPublished }) {
               onPress={pickImage}
             >
               {image ? (
-                <Image
-                  source={{ uri: image }}
-                  style={{ width: 100, height: 100, borderRadius: 15 }}
-                />
+                <Image source={{ uri: image }} style={styles.image} />
               ) : (
                 <Image
                   source={require("../assets/fotos/logo.png")}
-                  style={{ width: 100, height: 100, borderRadius: 15 }}
+                  style={styles.image}
                 />
               )}
             </TouchableOpacity>
@@ -230,7 +227,7 @@ export default function PostScreen({ navigation, onPostPublished }) {
               style={styles.input}
               onChangeText={handleChange("address")}
             />
-            <View style={{ borderWidth: 1, borderRadius: 15 }}>
+            <View style={styles.pickerContainer}>
               <Picker
                 selectedValue={values.category}
                 onValueChange={handleChange("category")}
@@ -267,7 +264,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#DEFFFB",
+    backgroundColor: "#EFE2FA",
   },
   header: {
     marginTop: Constants.statusBarHeight,
@@ -275,33 +272,49 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
+    fontSize: 26,
+    fontWeight: "700",
     marginBottom: 10,
+    color: "#2C3E50",
   },
   subt: {
-    fontSize: 18,
+    fontSize: 16,
     marginBottom: 20,
-    color: "grey",
+    color: "#7F8C8D",
   },
   input: {
     borderWidth: 1,
-    borderColor: "#cccccc",
-    borderRadius: 15,
-    padding: 10,
-    marginBottom: 10,
+    borderColor: "#BDC3C7",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 15,
     marginTop: 10,
+    backgroundColor: "#DEFFFB",
   },
   button: {
-    backgroundColor: "#3b5998",
+    backgroundColor: "#7164B4",
     padding: 15,
-    borderRadius: 15,
+    borderRadius: 10,
     alignItems: "center",
     margin: 10,
+    marginVertical: 20,
   },
   buttonText: {
-    color: "#ffffff",
-    fontSize: 16,
+    color: "#FFFFFF",
     fontWeight: "bold",
+    fontSize: 16,
+  },
+  image: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+    marginBottom: 15,
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: "#BDC3C7",
+    borderRadius: 10,
+    marginBottom: 15,
+    backgroundColor: "#DEFFFB",
   },
 });

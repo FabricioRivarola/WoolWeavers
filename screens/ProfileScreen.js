@@ -8,6 +8,7 @@ import {
   ScrollView,
   ActivityIndicator,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
@@ -17,12 +18,13 @@ import {
   query,
   where,
   onSnapshot,
+  doc,
+  deleteDoc,
 } from "firebase/firestore";
 import { getAuth, signOut, updateProfile } from "firebase/auth";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Importa Firebase Storage
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import * as ImagePicker from "expo-image-picker";
 
-// Inicializar Firebase y Firestore
 const db = getFirestore();
 const auth = getAuth();
 const storage = getStorage();
@@ -31,12 +33,12 @@ export default function ProfileScreen({ navigation }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userAvatar, setUserAvatar] = useState(null);
-  const user = auth.currentUser; // Obtiene el usuario actual
+  const user = auth.currentUser;
 
   useEffect(() => {
     if (user) {
       const userPostsRef = collection(db, "post");
-      const q = query(userPostsRef, where("userEmail", "==", user.email)); // Filtrar por email
+      const q = query(userPostsRef, where("userEmail", "==", user.email));
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const postsData = [];
         querySnapshot.forEach((doc) => {
@@ -46,17 +48,14 @@ export default function ProfileScreen({ navigation }) {
         setLoading(false);
       });
 
-      // Cargar el avatar inicial
       setUserAvatar(user.photoURL);
-
-      return () => unsubscribe(); // Cleanup subscription on unmount
+      return () => unsubscribe();
     }
   }, [user]);
 
   const handlePickAvatar = async () => {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
-
     if (permissionResult.granted === false) {
       alert("Se requieren permisos para acceder a la galería.");
       return;
@@ -69,38 +68,40 @@ export default function ProfileScreen({ navigation }) {
       quality: 1,
     });
 
-    // Asegúrate de que se esté accediendo a la propiedad correcta
     if (!result.canceled && result.assets.length > 0) {
-      const uri = result.assets[0].uri; // URI de la imagen seleccionada
-      setUserAvatar(uri); // Actualiza el estado con la nueva imagen
+      const uri = result.assets[0].uri;
+      setUserAvatar(uri);
 
-      // Obtener una referencia al almacenamiento
-      const avatarRef = ref(storage, `avatars/${user.uid}`); // Crea una referencia única en Storage
-
-      // Cargar la imagen
+      const avatarRef = ref(storage, `avatars/${user.uid}`);
       const response = await fetch(uri);
       const blob = await response.blob();
       await uploadBytes(avatarRef, blob);
-      console.log("Imagen subida con éxito."); // Log para verificar que la imagen se subió
 
-      // Obtiene la URL de descarga
       const avatarURL = await getDownloadURL(avatarRef);
-      console.log("URL del avatar:", avatarURL); // Log para verificar la URL
-
-      // Actualiza el perfil del usuario con la URL del avatar
-      await updateProfile(user, {
-        photoURL: avatarURL, // Guarda la URL del avatar
-      });
-      console.log("Perfil del usuario actualizado con nueva imagen.");
+      await updateProfile(user, { photoURL: avatarURL });
     }
   };
 
   const handleLogout = async () => {
     try {
-      await signOut(auth); // Cierra sesión
-      navigation.navigate("Login"); // Redirige a la pantalla de login (ajusta según tu navegación)
+      await signOut(auth);
+      navigation.navigate("Login");
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
+    }
+  };
+
+  const handleEditPost = (postId) => {
+    // Navegar a la pantalla de edición, pasando el ID del post a editar
+    navigation.navigate("EditPostScreen", { postId });
+  };
+
+  const handleDeletePost = async (postId) => {
+    try {
+      await deleteDoc(doc(db, "post", postId));
+      Alert.alert("Post eliminado", "El post ha sido eliminado exitosamente.");
+    } catch (error) {
+      console.error("Error al eliminar post:", error);
     }
   };
 
@@ -123,7 +124,12 @@ export default function ProfileScreen({ navigation }) {
                     style={styles.userImage}
                   />
                 ) : (
-                  <View style={styles.defaultImage} />
+                  <TouchableOpacity
+                    onPress={handlePickAvatar}
+                    style={styles.defaultImage}
+                  >
+                    <Ionicons name="add" size={40} color="#000" />
+                  </TouchableOpacity>
                 )}
               </TouchableOpacity>
               <Text style={styles.userName}>
@@ -148,6 +154,22 @@ export default function ProfileScreen({ navigation }) {
                 <Text style={styles.postCategory}>
                   Categoría: {post.category}
                 </Text>
+
+                {/* Botones de edición y eliminación */}
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity
+                    style={styles.editButton}
+                    onPress={() => handleEditPost(post.id)}
+                  >
+                    <Text style={styles.buttonText}>Editar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() => handleDeletePost(post.id)}
+                  >
+                    <Text style={styles.buttonText}>Eliminar</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             ))
           ) : (
@@ -173,7 +195,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 16,
-    backgroundColor: "#FFE",
+    backgroundColor: "#EFE2FA",
     borderBottomWidth: 1,
     borderBottomColor: "#EBECF4",
     shadowColor: "#454D65",
@@ -215,7 +237,7 @@ const styles = StyleSheet.create({
   postContainer: {
     marginBottom: 20,
     padding: 15,
-    backgroundColor: "#FFF",
+    backgroundColor: "#EFE2FA",
     borderRadius: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -239,11 +261,33 @@ const styles = StyleSheet.create({
   postPrice: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#007BFF",
+    color: "#7164B4",
   },
   postCategory: {
     fontSize: 12,
     color: "#555",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+  editButton: {
+    backgroundColor: "#7164B4",
+    padding: 10,
+    borderRadius: 5,
+    width: "45%",
+  },
+  deleteButton: {
+    backgroundColor: "#8F9FE4",
+    padding: 10,
+    borderRadius: 5,
+    width: "45%",
+  },
+  buttonText: {
+    color: "#FFF",
+    textAlign: "center",
+    fontWeight: "bold",
   },
   noPostsText: {
     textAlign: "center",
@@ -254,12 +298,21 @@ const styles = StyleSheet.create({
   logoutButton: {
     marginTop: 20,
     padding: 10,
-    backgroundColor: "#FF4C4C",
+    backgroundColor: "#8F9FE4",
     borderRadius: 5,
     alignItems: "center",
   },
   logoutButtonText: {
     color: "#FFF",
     fontWeight: "bold",
+  },
+  defaultImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "#7164B4", // Puedes cambiar el color de fondo
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 10,
   },
 });

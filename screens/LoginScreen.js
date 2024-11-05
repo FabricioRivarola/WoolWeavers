@@ -63,7 +63,7 @@ export default class LoginScreen extends React.Component {
           )}
         </View>
 
-        <ScrollView style={styles.form}>
+        <View style={styles.form}>
           <View>
             <Text style={styles.inputTitle}>Email Address</Text>
             <TextInput
@@ -84,10 +84,10 @@ export default class LoginScreen extends React.Component {
               value={this.state.password}
             />
           </View>
-        </ScrollView>
+        </View>
 
         <TouchableOpacity style={styles.button} onPress={this.handleLogin}>
-          <Text style={{ color: "#000", fontWeight: "500" }}>Sign In</Text>
+          <Text style={{ color: "#FFF", fontWeight: "500" }}>Sign In</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -96,7 +96,7 @@ export default class LoginScreen extends React.Component {
         >
           <Text style={{ color: "#414959", fontSize: 13 }}>
             ¿Usuario Nuevo?{" "}
-            <Text style={{ fontWeight: "500", color: "#009381" }}>Sign Up</Text>
+            <Text style={{ fontWeight: "500", color: "#7164B4" }}>Sign Up</Text>
           </Text>
         </TouchableOpacity>
       </View>
@@ -138,8 +138,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 30,
   },
   inputTitle: {
-    color: "#8A8F9E",
-    fontSize: 10,
+    color: "#009381",
+    fontSize: 11,
     textTransform: "uppercase",
   },
   input: {
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   },
   button: {
     marginHorizontal: 30,
-    backgroundColor: "#56FFEB",
+    backgroundColor: "#7164B4",
     borderRadius: 4,
     height: 52,
     alignItems: "center",

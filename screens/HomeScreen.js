@@ -161,20 +161,23 @@ export default class HomeScreen extends React.Component {
               console.error("Error cargando la imagen:", post.image)
             }
           />
-          <Text style={styles.description}>
-            Precio: ${post.price || "Precio no disponible"}
-          </Text>
+          {/* <View style={styles.caja}> */}
           <Text style={styles.description}>
             {post.desc || "Descripción no disponible"}
           </Text>
+          <Text style={styles.descriptionn}>
+            Precio: ${post.price || "Precio no disponible"}
+          </Text>
+
           <Text style={styles.description}>
             Categoria: {post.category || "Categoría no disponible"}
           </Text>
+          {/* </View> */}
           <View style={styles.postActions}>
             <Button
               title="Comprar"
               onPress={() => this.handleBuyPress(post)}
-              color="#841584"
+              color="#7164B4"
             />
           </View>
         </View>
@@ -224,17 +227,16 @@ export default class HomeScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#DEFFFB",
+    backgroundColor: "#DEFFFB", // Estilo de fondo
   },
   header: {
     paddingTop: 16,
     paddingBottom: 16,
-    backgroundColor: "#FFE",
+    backgroundColor: "#EFE2FA", // Color de fondo del header
     alignItems: "center",
     justifyContent: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: "#EBECF4",
     shadowColor: "#454D65",
+    // color: "black",
     shadowOffset: { height: 5 },
     shadowRadius: 15,
     shadowOpacity: 0.2,
@@ -243,23 +245,22 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: "700",
+    color: "#000", // Color del texto del header
   },
   picker: {
     height: 50,
     width: "100%",
     marginBottom: 16,
-    borderColor: "#EBECF4",
     borderWidth: 1,
     borderRadius: 5,
     paddingHorizontal: 16,
-    marginBottom: 16,
-    backgroundColor: "#FFE",
+    backgroundColor: "#EFE2FA", // Color de fondo del picker
   },
   feed: {
     marginHorizontal: 16,
   },
   feedItem: {
-    backgroundColor: "#FFF",
+    backgroundColor: "#EFE2FA", // Color de fondo de los ítems
     borderRadius: 5,
     padding: 8,
     flexDirection: "row",
@@ -278,17 +279,22 @@ const styles = StyleSheet.create({
   },
   timestamp: {
     fontSize: 12,
-    color: "#C4C6CE",
+    color: "#333", // Cambiado a un gris oscuro para mayor contraste
     marginTop: 4,
   },
   post: {
     marginTop: 10,
     fontSize: 16,
-    color: "#838899",
+    color: "#7164B4",
   },
   description: {
     fontSize: 14,
-    color: "#555",
+    color: "#000", // Color del texto de la descripción 7164B4
+    marginTop: 4,
+  },
+  descriptionn: {
+    fontSize: 14,
+    color: "#7164B4", // Color del texto de la descripción 7164B4
     marginTop: 4,
   },
   postImage: {
@@ -307,5 +313,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
     margin: 10,
+  },
+  caja: {
+    marginTop: 10,
+    marginBottom: 10,
+    backgroundColor: "#8F9FE4", // Color de fondo de la caja
+    borderRadius: 5,
+    padding: 16,
+    shadowColor: "#454D65",
+    shadowOffset: { height: 5 },
+    shadowRadius: 15,
+    shadowOpacity: 0.2,
+    zIndex: 10,
   },
 });

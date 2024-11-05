@@ -223,7 +223,7 @@ export default class RegisterScreen extends React.Component {
         </View>
 
         <TouchableOpacity style={styles.button} onPress={this.handleSignUp}>
-          <Text style={{ color: "#000", fontWeight: "500" }}>Sign Up</Text>
+          <Text style={{ color: "#FFF", fontWeight: "500" }}>Sign Up</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -232,7 +232,7 @@ export default class RegisterScreen extends React.Component {
         >
           <Text style={{ color: "#414959", fontSize: 13 }}>
             ¿Tienes cuenta?{" "}
-            <Text style={{ fontWeight: "500", color: "#009381" }}>Log In</Text>
+            <Text style={{ fontWeight: "500", color: "#7164B4" }}>Log In</Text>
           </Text>
         </TouchableOpacity>
       </ScrollView>
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 30,
   },
   error: {
-    color: "#E9446A",
+    color: "#7164B4",
     fontSize: 13,
     fontWeight: "600",
     textAlign: "center",
@@ -268,8 +268,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 30,
   },
   inputTitle: {
-    color: "#8A8F9E",
-    fontSize: 10,
+    color: "#009381",
+    fontSize: 11,
     textTransform: "uppercase",
   },
   input: {
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
   },
   button: {
     marginHorizontal: 30,
-    backgroundColor: "#56FFEB",
+    backgroundColor: "#7164B4",
     borderRadius: 4,
     height: 52,
     alignItems: "center",
